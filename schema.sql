@@ -1,0 +1,5 @@
+CREATE TABLE url_map(
+	slug VARCHAR(10) UNIQUE NOT NULL,
+	long_url TEXT NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW()
+);
