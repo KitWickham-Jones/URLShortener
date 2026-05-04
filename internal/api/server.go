@@ -1,13 +1,13 @@
 package api
 
 import (
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kitwj/urlshortener/internal/store"
 )
 
 type Server struct{
-	db *pgxpool.Pool
+	store *store.Store
 }
 
-func New (db *pgxpool.Pool) *Server{
-	return &Server{db: db}
+func New (st *store.Store) *Server{
+	return &Server{store: st}
 }

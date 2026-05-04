@@ -10,8 +10,23 @@ func (s *Server) handleShorten(w http.ResponseWriter, r *http.Request){
 		URL string `json:"url"`
 	}
 	json.NewDecoder(r.Body).Decode(&body)
-	// slug := generateSlug()
 
+	if body.URL == "" {
+		http.Error(w, "URL is required", http.StatusBadRequest)
+	}
 
+	ctx := r.Context()
+	slug := generateSlug()
+
+	err := s.store.InsertURL(ctx, slug, body.URL)
+	if err != nil{
+		http.Error(w, "Failed to write url to database", http.StatusInternalServerError)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]string{
+		"short_url" : "https://short/" + slug,
+	})
 
 }
