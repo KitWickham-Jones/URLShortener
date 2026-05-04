@@ -14,7 +14,8 @@ type Server struct{
 func New (st *store.Store) *Server{
 	s := &Server{store: st}
 	s.router = http.NewServeMux()
-	s.router.HandleFunc("/shorten", s.handleShorten)
+	s.router.HandleFunc("POST /shorten", s.handleShorten)
+	s.router.HandleFunc("GET /{slug}", s.handleRedirect)
 	return s
 }
 

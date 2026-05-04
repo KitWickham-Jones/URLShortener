@@ -34,5 +34,20 @@ func (s *Server) handleShorten(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(map[string]string{
 		"short_url" : "https://short/" + slug,
 	})
+}
+
+func (s *Server) handleRedirect(w http.ResponseWriter, r *http.Request){
+	
+	slug := r.PathValue("slug"); if slug == ""{
+		http.NotFound(w, r)
+		return
+	}
+
+	longurl, err := s.store.GetURL(r.Context(), slug)
+	if err != nil{
+		http.NotFound(w, r)
+		return
+	}
+	http.Redirect(w, r, longurl, http.StatusFound)
 
 }
