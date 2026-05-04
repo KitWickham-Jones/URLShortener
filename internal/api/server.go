@@ -18,7 +18,6 @@ func New (st *store.Store) *Server{
 	return s
 }
 
-
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s %s", r.Method, r.URL.Path)
 	s.router.ServeHTTP(w, r)
