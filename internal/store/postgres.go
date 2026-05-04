@@ -3,14 +3,19 @@ package store
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 type Store struct{
 	db *pgxpool.Pool
+	rdb *redis.Client
 }
 
-func New (db *pgxpool.Pool) *Store{
-	return &Store{db: db}
+func New (db *pgxpool.Pool, rdb *redis.Client) *Store{
+	return &Store{
+		db: db,
+		rdb: rdb,
+	}
 }
 
 

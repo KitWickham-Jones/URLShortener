@@ -9,6 +9,7 @@ import (
 	"github.com/kitwj/urlshortener/internal/api"
 	"github.com/kitwj/urlshortener/internal/config"
 	"github.com/kitwj/urlshortener/internal/store"
+	"github.com/redis/go-redis/v9"
 )
 
 func main(){
@@ -20,10 +21,23 @@ func main(){
 	}
 	defer db.Close()
 
-	st := store.New(db)
-	srv := api.New(st)
+	if err := db.Ping(context.Background()); err != nil{
+		log.Fatal("Could not connect to database.", err)
+	}
+	log.Println("Database connected")
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr: cfg.RedisURL,
+	})
+	if err := rdb.Ping(context.Background()).Err(); err != nil{
+		log.Fatal("Could not connect to redis", err)
+	}
+
+
+	st := store.New(db, rdb)
+	srv := api.New(st, cfg)
 	
-	log.Printf("server started at http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", srv))
+	log.Printf("server started at %s", cfg.BaseURL)
+	log.Fatal(http.ListenAndServe(cfg.Port, srv))
 
 }

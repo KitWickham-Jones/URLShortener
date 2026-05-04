@@ -32,7 +32,7 @@ func (s *Server) handleShorten(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{
-		"short_url" : "http://localhost:8080/" + slug,
+		"short_url" : s.config.BaseURL + "/"+ slug,
 	})
 }
 
