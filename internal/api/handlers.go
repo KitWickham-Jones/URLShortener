@@ -10,7 +10,8 @@ func (s *Server) handleShorten(w http.ResponseWriter, r *http.Request){
 		URL string `json:"url"`
 	}
 	json.NewDecoder(r.Body).Decode(&body)
+	// slug := generateSlug()
 
-	
+
 
 }

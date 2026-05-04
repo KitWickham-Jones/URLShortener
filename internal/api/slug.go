@@ -6,7 +6,7 @@ import(
 	"math/big"
 )
 
-func GenerateSlug() string{
+func generateSlug() string{
 	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	b := make([]byte, 6)
 	for i := range b{
