@@ -9,18 +9,24 @@ func (s *Server) handleShorten(w http.ResponseWriter, r *http.Request){
 	var body struct{
 		URL string `json:"url"`
 	}
-	json.NewDecoder(r.Body).Decode(&body)
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "invalid json", http.StatusBadRequest)
+		return
+	}
 
 	if body.URL == "" {
 		http.Error(w, "URL is required", http.StatusBadRequest)
+		return
 	}
-
+	
 	ctx := r.Context()
 	slug := generateSlug()
 
 	err := s.store.InsertURL(ctx, slug, body.URL)
 	if err != nil{
 		http.Error(w, "Failed to write url to database", http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")

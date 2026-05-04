@@ -3,29 +3,27 @@ package main
 import (
 	"context"
 	"log"
-	"github.com/jackc/pgx/v5"
+	"net/http"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	"github.com/kitwj/urlshortener/internal/api"
 	"github.com/kitwj/urlshortener/internal/config"
+	"github.com/kitwj/urlshortener/internal/store"
 )
 
 func main(){
 	godotenv.Load()
 	cfg := config.Load()
-	db, err := pgx.Connect(context.Background(), cfg.DatabaseURL)
+	db, err := pgxpool.New(context.Background(), cfg.DatabaseURL)
 	if err != nil{
 		log.Fatal(err)
 	}
-	defer db.Close(context.Background())
+	defer db.Close()
+
+	st := store.New(db)
+	srv := api.New(st)
+	
+	log.Printf("server started at http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", srv))
 
 }
-
-// package main
-
-// import(
-// 	"fmt"
-// 	"github.com/kitwj/urlshortener/internal/api"
-// )
-
-// func main(){
-// 	fmt.Println(api.GenerateSlug())
-// }
