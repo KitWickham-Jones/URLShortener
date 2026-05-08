@@ -13,7 +13,7 @@ func Load() *Config{
 	return &Config{
 		DatabaseURL: os.Getenv("DATABASE_URL"),
 		RedisURL: os.Getenv("REDIS_URL"),
-		Port: os.Getenv("Port"),
+		Port: os.Getenv("PORT"),
 		BaseURL: os.Getenv("BASE_URL"),
 	}
 }

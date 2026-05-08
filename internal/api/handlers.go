@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -37,17 +38,26 @@ func (s *Server) handleShorten(w http.ResponseWriter, r *http.Request){
 }
 
 func (s *Server) handleRedirect(w http.ResponseWriter, r *http.Request){
+	slug := r.PathValue("slug")
+	if slug == "" {
+		http.NotFound(w, r)
+		return
+	}
+
+	longurl, err := s.store.GetCachedURL(r.Context(), slug)
+	if err == nil {
+		log.Printf("cache hit for %s", slug)
+		http.Redirect(w, r, longurl, http.StatusFound)
+		return
+	} 
+
+	longurl, err = s.store.GetURL(r.Context(),slug)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	s.store.CacheURL(r.Context(), slug, longurl)
+	http.Redirect(w, r, longurl, http.StatusFound )
 	
-	slug := r.PathValue("slug"); if slug == ""{
-		http.NotFound(w, r)
-		return
-	}
-
-	longurl, err := s.store.GetURL(r.Context(), slug)
-	if err != nil{
-		http.NotFound(w, r)
-		return
-	}
-	http.Redirect(w, r, longurl, http.StatusFound)
-
 }
