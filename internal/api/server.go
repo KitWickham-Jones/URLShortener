@@ -21,6 +21,9 @@ func New (st *store.Store, cfg *config.Config) *Server{
 	s.router = http.NewServeMux()
 	s.router.HandleFunc("POST /shorten", s.handleShorten)
 	s.router.HandleFunc("GET /{slug}", s.handleRedirect)
+	s.router.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request){
+		w.WriteHeader(http.StatusOK)
+	})
 	return s
 }
 
