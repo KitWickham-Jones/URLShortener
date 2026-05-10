@@ -1,3 +1,5 @@
 .env
 
 .vscode
+
+deployments/kubernetes/secret.yaml
