@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"github.com/kitwj/urlshortener/internal/config"
 	"github.com/kitwj/urlshortener/internal/store"
+	// "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Server struct{
@@ -24,6 +25,9 @@ func New (st *store.Store, cfg *config.Config) *Server{
 	s.router.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request){
 		w.WriteHeader(http.StatusOK)
 	})
+	// s.router.HandleFunc("GET /metrics123", func(w http.ResponseWriter, r *http.Request){
+	// 	w.Write([]byte("metrics test"))
+	// })
 	return s
 }
 
