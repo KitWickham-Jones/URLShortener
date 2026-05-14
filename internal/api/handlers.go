@@ -46,6 +46,7 @@ func (s *Server) handleRedirect(w http.ResponseWriter, r *http.Request){
 
 	longurl, err := s.store.GetCachedURL(r.Context(), slug)
 	if err == nil {
+		s.metrics.RedirectsTotal.Inc()
 		log.Printf("cache hit for %s", slug)
 		http.Redirect(w, r, longurl, http.StatusFound)
 		return
@@ -58,6 +59,7 @@ func (s *Server) handleRedirect(w http.ResponseWriter, r *http.Request){
 	}
 
 	s.store.CacheURL(r.Context(), slug, longurl)
-	http.Redirect(w, r, longurl, http.StatusFound)
 	s.metrics.RedirectsTotal.Inc()
+	http.Redirect(w, r, longurl, http.StatusFound)
+	
 }

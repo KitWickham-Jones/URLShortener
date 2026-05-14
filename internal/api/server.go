@@ -17,10 +17,11 @@ type Server struct{
 	metrics *metrics.Metrics
 }
 
-func New (st *store.Store, cfg *config.Config, met * metrics.Metrics) *Server{
+func New (st *store.Store, cfg *config.Config, met *metrics.Metrics) *Server{
 	s := &Server{
 		store: st,
 		config: cfg,
+		metrics: met,
 	}
 	s.router = http.NewServeMux()
 	s.router.HandleFunc("POST /shorten", s.handleShorten)
