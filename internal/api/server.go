@@ -3,6 +3,7 @@ package api
 import (
 	"log"
 	"net/http"
+	"time"
 	"github.com/kitwj/urlshortener/internal/config"
 	"github.com/kitwj/urlshortener/internal/metrics"
 	"github.com/kitwj/urlshortener/internal/store"
@@ -32,6 +33,8 @@ func New (st *store.Store, cfg *config.Config, met * metrics.Metrics) *Server{
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
 	log.Printf("%s %s", r.Method, r.URL.Path)
 	s.router.ServeHTTP(w, r)
+	s.metrics.RequestDuration.Observe(time.Since(start).Seconds())
 }
