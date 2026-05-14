@@ -58,6 +58,6 @@ func (s *Server) handleRedirect(w http.ResponseWriter, r *http.Request){
 	}
 
 	s.store.CacheURL(r.Context(), slug, longurl)
-	http.Redirect(w, r, longurl, http.StatusFound )
-	
+	http.Redirect(w, r, longurl, http.StatusFound)
+	s.metrics.RedirectsTotal.Inc()
 }
