@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"github.com/kitwj/urlshortener/internal/config"
+	"github.com/kitwj/urlshortener/internal/metrics"
 	"github.com/kitwj/urlshortener/internal/store"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -12,9 +13,10 @@ type Server struct{
 	store *store.Store
 	router *http.ServeMux
 	config *config.Config
+	metrics *metrics.Metrics
 }
 
-func New (st *store.Store, cfg *config.Config) *Server{
+func New (st *store.Store, cfg *config.Config, met * metrics.Metrics) *Server{
 	s := &Server{
 		store: st,
 		config: cfg,

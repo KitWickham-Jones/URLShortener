@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"github.com/kitwj/urlshortener/internal/metrics"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/kitwj/urlshortener/internal/api"
@@ -33,9 +34,9 @@ func main(){
 		log.Fatal("Could not connect to redis", err)
 	}
 
-
-	st := store.New(db, rdb)
-	srv := api.New(st, cfg)
+	met:= metrics.New()
+	st := store.New(db, rdb, met)
+	srv := api.New(st, cfg, met)
 	
 	log.Printf("server started at %s", cfg.BaseURL)
 	log.Fatal(http.ListenAndServe(cfg.Port, srv))
