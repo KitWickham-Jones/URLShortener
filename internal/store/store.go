@@ -17,5 +17,6 @@ func New (db *pgxpool.Pool, rdb *redis.Client, met *metrics.Metrics) *Store{
 	return &Store{
 		db: db,
 		rdb: rdb,
+		metrics: met,
 	}
 }
