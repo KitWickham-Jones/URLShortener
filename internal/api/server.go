@@ -46,12 +46,15 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) publishClickEvent(slug string){
+	log.Printf("publishing click event for %s", slug)
 	payload, _ := json.Marshal(map[string]string{
 		"slug": slug,
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	})
 
-	s.kafka.WriteMessages(context.Background(), kafka.Message{
+	if err := s.kafka.WriteMessages(context.Background(), kafka.Message{
 		Value: payload,
-	})
+	}); err != nil {
+		log.Printf("kafka write error: %v", err)
+	}
 }

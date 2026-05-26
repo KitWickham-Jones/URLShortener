@@ -39,7 +39,6 @@ func main(){
 	kfk:= kafka.NewWriter(kafka.WriterConfig{
 		Brokers: []string{"kafka-service:9092"},
 		Topic: "click-events",
-		Async: true,
 	})
 
 	met:= metrics.New()
