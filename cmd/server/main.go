@@ -4,13 +4,15 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"github.com/kitwj/urlshortener/internal/metrics"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/kitwj/urlshortener/internal/api"
 	"github.com/kitwj/urlshortener/internal/config"
+	"github.com/kitwj/urlshortener/internal/metrics"
 	"github.com/kitwj/urlshortener/internal/store"
 	"github.com/redis/go-redis/v9"
+	"github.com/segmentio/kafka-go"
 )
 
 func main(){
@@ -34,9 +36,15 @@ func main(){
 		log.Fatal("Could not connect to redis", err)
 	}
 
+	kfk:= kafka.NewWriter(kafka.WriterConfig{
+		Brokers: []string{"kafka-service:9092"},
+		Topic: "click-events",
+		Async: true,
+	})
+
 	met:= metrics.New()
 	st := store.New(db, rdb, met)
-	srv := api.New(st, cfg, met)
+	srv := api.New(st, cfg, met, kfk)
 	
 	log.Printf("server started at %s", cfg.BaseURL)
 	log.Fatal(http.ListenAndServe(cfg.Port, srv))

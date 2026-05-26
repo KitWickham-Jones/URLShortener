@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -45,21 +44,17 @@ func (s *Server) handleRedirect(w http.ResponseWriter, r *http.Request){
 	}
 
 	longurl, err := s.store.GetCachedURL(r.Context(), slug)
-	if err == nil {
-		s.metrics.RedirectsTotal.Inc()
-		log.Printf("cache hit for %s", slug)
-		http.Redirect(w, r, longurl, http.StatusFound)
-		return
+	if err != nil {
+		longurl, err = s.store.GetURL(r.Context(), slug)
+		if err != nil{
+			http.NotFound(w, r)
+			return
+		}
+		s.store.CacheURL(r.Context(), slug, longurl)
 	} 
 
-	longurl, err = s.store.GetURL(r.Context(),slug)
-	if err != nil {
-		http.NotFound(w, r)
-		return
-	}
-
-	s.store.CacheURL(r.Context(), slug, longurl)
 	s.metrics.RedirectsTotal.Inc()
+	go s.publishClickEvent(slug)
 	http.Redirect(w, r, longurl, http.StatusFound)
-	
+
 }

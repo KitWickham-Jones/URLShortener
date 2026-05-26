@@ -1,6 +1,8 @@
 package api
 
 import (
+	"context"
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -8,6 +10,7 @@ import (
 	"github.com/kitwj/urlshortener/internal/metrics"
 	"github.com/kitwj/urlshortener/internal/store"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/segmentio/kafka-go"
 )
 
 type Server struct{
@@ -15,13 +18,15 @@ type Server struct{
 	router *http.ServeMux
 	config *config.Config
 	metrics *metrics.Metrics
+	kafka *kafka.Writer
 }
 
-func New (st *store.Store, cfg *config.Config, met *metrics.Metrics) *Server{
+func New (st *store.Store, cfg *config.Config, met *metrics.Metrics, kfk *kafka.Writer) *Server{
 	s := &Server{
 		store: st,
 		config: cfg,
 		metrics: met,
+		kafka: kfk,
 	}
 	s.router = http.NewServeMux()
 	s.router.HandleFunc("POST /shorten", s.handleShorten)
@@ -38,4 +43,15 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s %s", r.Method, r.URL.Path)
 	s.router.ServeHTTP(w, r)
 	s.metrics.RequestDuration.Observe(time.Since(start).Seconds())
+}
+
+func (s *Server) publishClickEvent(slug string){
+	payload, _ := json.Marshal(map[string]string{
+		"slug": slug,
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	})
+
+	s.kafka.WriteMessages(context.Background(), kafka.Message{
+		Value: payload,
+	})
 }
