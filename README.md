@@ -65,14 +65,6 @@ Load tested with `hey` (n=10,000, c=500 concurrent):
 | Redis + 1 pod | 16ms | 77ms | 22,649 |
 | Kubernetes 3 pods + Redis | 34ms | 120ms | 11,220 |
 
-## Environment Variables
-
-```
-DATABASE_URL=postgres://admin:secret@database:5432/urlshortener
-REDIS_URL=redis:6379
-PORT=:8080
-BASE_URL=http://localhost:8080
-```
 
 ## Local Development
 
