@@ -1,12 +1,13 @@
 import asyncio
 import json
-from database import init_db, insert_click
+import os
+from database import insert_click
 from aiokafka import AIOKafkaConsumer
 
 async def start_consumer():
 	consumer = AIOKafkaConsumer(
 		"click-events",
-		bootstrap_servers="localhost:9092"
+		bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 	)
 	await consumer.start()
 	async for msg in consumer:
