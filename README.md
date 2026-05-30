@@ -9,6 +9,8 @@ POST /shorten → Go API → PostgreSQL
 GET /:slug   → Go API → Redis (cache) → PostgreSQL → 302 redirect
                                       ↘ Kafka (click event)
                                               ↘ Python consumer → clicks table
+                                                                        ↑
+                                              GET /analytics/{slug} ───┘
 ```
 
 ## Stack
@@ -19,11 +21,13 @@ GET /:slug   → Go API → Redis (cache) → PostgreSQL → 302 redirect
 | Primary DB | PostgreSQL 16 |
 | Cache | Redis (read-through, 24hr TTL) |
 | Message Queue | Kafka (KRaft mode) |
-| Analytics | Python, aiokafka, asyncpg |
+| Analytics | Python, FastAPI, aiokafka, asyncpg |
 | Orchestration | Kubernetes (Minikube) |
 | Observability | Prometheus, Grafana |
 
 ## API
+
+### URL Shortener (Go, port 8080)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -40,6 +44,17 @@ curl -X POST http://localhost:8080/shorten \
 # {"short_url": "http://localhost:8080/4HTNpR"}
 ```
 
+### Analytics (Python, port 8000)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/analytics/{slug}` | Click count for a slug |
+
+```bash
+curl http://localhost:8000/analytics/4HTNpR
+# {"slug": "4HTNpR", "clicks": 42}
+```
+
 ## Benchmarks
 
 Load tested with `hey` (n=10,000, c=500 concurrent):
@@ -50,21 +65,39 @@ Load tested with `hey` (n=10,000, c=500 concurrent):
 | Redis + 1 pod | 16ms | 77ms | 22,649 |
 | Kubernetes 3 pods + Redis | 34ms | 120ms | 11,220 |
 
+## Environment Variables
+
+```
+DATABASE_URL=postgres://admin:secret@database:5432/urlshortener
+REDIS_URL=redis:6379
+PORT=:8080
+BASE_URL=http://localhost:8080
+```
+
 ## Local Development
 
 ```bash
 # Start infrastructure
 docker compose up database redis
 
-# Run API
+# Run Go API
 cd services/urlshortener
 go run cmd/server/main.go
+
+# Run analytics service (separate terminal)
+cd services/analytics
+source .venv/bin/activate
+uvicorn main:app --reload
+
+# Port-forward Kafka for local analytics
+kubectl port-forward svc/kafka-service 9092:9092
+kubectl port-forward svc/postgres 5432:5432
 ```
 
 ## Kubernetes (Minikube)
 
 ```bash
-# Build and load image
+# Build and load images
 eval $(minikube docker-env)
 docker build -t urlshortener:latest ./services/urlshortener
 
@@ -78,8 +111,11 @@ curl -I http://127.0.0.1/health
 # Logs
 kubectl logs -f -l app=urlshortener --prefix=true | grep -v health
 
+# Grafana
+kubectl port-forward svc/grafana-service 3000:3000
+
 # Prometheus
-kubectl port-forward service/prometheus-service 9090:9090
+kubectl port-forward svc/prometheus-service 9090:9090
 ```
 
 ## Directory Structure
@@ -93,9 +129,10 @@ services/
       store/          ← postgres, redis
       metrics/        ← prometheus counters
       config/
-  analytics/          ← Python Kafka consumer
-    consumer.py
-    database.py
+  analytics/          ← Python analytics service
+    main.py           ← FastAPI app, lifespan, endpoints
+    consumer.py       ← Kafka consumer
+    database.py       ← asyncpg pool, queries
 deployments/
   kubernetes/
     core/             ← deployment, service, HPA, configmap, secret
