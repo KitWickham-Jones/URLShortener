@@ -1,6 +1,4 @@
 import asyncpg 
-import asyncio
-
 
 async def init_db(dsn: str):
 	global pool
@@ -15,9 +13,11 @@ async def insert_click(slug: str):
 		)
 	print(f"Inserted click for {slug}")
 
-# async def main():
-# 	await init_db("postgresql://admin:secret@localhost:5432/urlshortener")
-# 	await insert_click("abc12")
+async def get_click_data(slug: str):
+	async with pool.acquire() as conn:
+		return await conn.fetchval(
+			"SELECT COUNT(*) FROM clicks WHERE slug =$1", slug
+		)
 
-
-# asyncio.run(main())
+async def close_db():
+	await pool.close()
