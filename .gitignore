@@ -6,3 +6,6 @@
 deployments/kubernetes/secret.yaml
 
 claude.md
+
+__pycache__/
+*.pyc
