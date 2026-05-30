@@ -36,10 +36,12 @@ func main(){
 		log.Fatal("Could not connect to redis", err)
 	}
 
-	kfk:= kafka.NewWriter(kafka.WriterConfig{
-		Brokers: []string{"kafka-service:9092"},
-		Topic: "click-events",
-	})
+	kfk := &kafka.Writer{
+		Addr: kafka.TCP("kafka-service:9092"),
+		Topic:  "click-events",
+		AllowAutoTopicCreation: true,
+		}
+
 
 	met:= metrics.New()
 	st := store.New(db, rdb, met)
