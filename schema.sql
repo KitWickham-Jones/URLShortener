@@ -3,3 +3,9 @@ CREATE TABLE url_map(
 	long_url TEXT NOT NULL,
 	created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS clicks(
+	id SERIAL PRIMARY KEY,
+	slug VARCHAR(10),
+	clicked_at TIMESTAMPTZ DEFAULT NOW()
+);

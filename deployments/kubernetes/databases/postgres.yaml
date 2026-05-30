@@ -9,6 +9,11 @@ data:
       long_url TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
+    CREATE TABLE IF NOT EXISTS clicks(
+      id SERIAL PRIMARY KEY,
+      slug VARCHAR(10),
+      clicked_at TIMESTAMPTZ DEFAULT NOW()
+    );
 ---
 apiVersion: apps/v1
 kind: Deployment
